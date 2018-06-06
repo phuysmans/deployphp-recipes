@@ -51,39 +51,32 @@ set('bin/phinx', function () {
  * @return Path to Phinx
  */
 function phinx_path() {
-	$isExistsCmd = 'if [ -f %s ]; then echo true; fi';
+    $isExistsCmd = 'if [ -f %s ]; then echo true; fi';
 
     try {
-        $phinxPath = run('which phinx')->toString();
+        $phinxPath = run('which phinx');
     } catch (\RuntimeException $e) {
     	$phinxPath = null;
     }
 
     if ($phinxPath !== null) {
         return 'phinx';
-    } else if (run(
-        sprintf(
-            $isExistsCmd,
-            '{{release_path}}/vendor/bin/phinx'
-        )
-    )->toBool()
-    ) {
-        return "{{release_path}}/vendor/bin/phinx";
-    } else if (run(
-        sprintf(
-            $isExistsCmd,
-            '~/.composer/vendor/bin/phinx'
-        )
-    )->toBool()
-    ) {
-        return '~/.composer/vendor/bin/phinx';
-    } else {
-        throw new \RuntimeException(
-            'Cannot find phinx. Please specify path to phinx manually'
-        );
     }
+	
+    $phinxPath = run(sprintf($isExistsCmd, '{{release_path}}/vendor/bin/phinx'));
+    if (! empty($phinxPath)) {
+	return "{{release_path}}/vendor/bin/phinx";
+    }
+	
+    $phinxPath = run(sprintf($isExistsCmd, '~/.composer/vendor/bin/phinx'));
+    if (! empty($phinxPath)) {
+        return '~/.composer/vendor/bin/phinx';
+    }
+	
+    throw new \RuntimeException(
+        'Cannot find phinx. Please specify path to phinx manually'
+    );
 }
-
 
 
 /**
